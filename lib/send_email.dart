@@ -42,8 +42,7 @@ class _SendEmailUIState extends State<SendEmailUI> {
     String email = profileData?['email'] ?? '';
     String avatar = profileData?['avatar'] ?? '';
     String fullName = firstName + " " + lastName;
-    log("$isFavorite");
-    log("$profileData");
+
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xFF32BAA5),
@@ -145,13 +144,13 @@ class _SendEmailUIState extends State<SendEmailUI> {
                     children: [
                       Expanded(
                         child: Container(
-                          color: Color(0xFFF1F1F1),
+                          color: Color.fromARGB(255, 133, 129, 129),
                           height: 100,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.message,
+                                Icons.email,
                                 color: Colors.white,
                                 size: 30,
                               ),
