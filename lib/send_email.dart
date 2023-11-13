@@ -2,6 +2,10 @@ import 'edit_profile.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer';
 
+// MUHAMMAD SYAHMI BIN SAMURI
+// https://github.com/syahmisenpai97/
+// www.linkedin.com/in/muhdsyahmisamuri
+
 class SendEmailUI extends StatefulWidget {
   final Map? profile;
   final bool favorite; // Include the boolean here

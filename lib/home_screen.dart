@@ -5,6 +5,10 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+// MUHAMMAD SYAHMI BIN SAMURI
+// https://github.com/syahmisenpai97/
+// www.linkedin.com/in/muhdsyahmisamuri
+
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
