@@ -13,7 +13,7 @@ class _EditProfileUIState extends State<EditProfileUI> {
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-  
+
   // Define controllers for other fields if needed
   @override
   Widget build(BuildContext context) {
@@ -156,7 +156,6 @@ class _EditProfileUIState extends State<EditProfileUI> {
       padding: EdgeInsets.only(bottom: 16, left: 10, right: 10, top: 24),
       child: ElevatedButton(
         onPressed: () {
-          // Collect the updated data
           Map<String, String> updatedData = {
             'first_name': firstNameController.text,
             'last_name': lastNameController.text,
@@ -164,7 +163,6 @@ class _EditProfileUIState extends State<EditProfileUI> {
             // Add other updated fields
           };
 
-          // Return the updated data to the previous screen
           Navigator.of(context).pop(updatedData);
         },
         style: ElevatedButton.styleFrom(

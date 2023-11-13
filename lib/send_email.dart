@@ -14,6 +14,24 @@ class SendEmailUI extends StatefulWidget {
 }
 
 class _SendEmailUIState extends State<SendEmailUI> {
+  
+  void navigateToEditProfile(BuildContext context, Map? profileData) async {
+  final updatedData = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => EditProfileUI(profile: profileData),
+    ),
+  );
+
+  if (updatedData != null) {
+    setState(() {
+      widget.profile?['first_name'] = updatedData['first_name'];
+      widget.profile?['last_name'] = updatedData['last_name'];
+      widget.profile?['email'] = updatedData['email'];
+      // Update other fields if needed
+    });
+  }
+}
   @override
   Widget build(BuildContext context) {
     Map? profileData = widget.profile;
@@ -31,12 +49,16 @@ class _SendEmailUIState extends State<SendEmailUI> {
           backgroundColor: Color(0xFF32BAA5),
           centerTitle: true,
           leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+  icon: Icon(
+    Icons.arrow_back,
+    color: Colors.white,
+  ),
+  onPressed: () {
+
+    Navigator.pop(context, widget.profile);// Remove the second argument
+  },
+),
+
           title: Text(
             "Edit Profile",
             style: TextStyle(
@@ -201,11 +223,4 @@ class showFavouriteIcon extends StatelessWidget {
       ),
     );
   }
-}
-
-void navigateToEditProfile(BuildContext context, Map? profileData) {
-  final route = MaterialPageRoute(
-    builder: (context) => EditProfileUI(profile: profileData),
-  );
-  Navigator.push(context, route);
 }

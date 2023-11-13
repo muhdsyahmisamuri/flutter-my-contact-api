@@ -38,6 +38,59 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+void navigateToSendEmail(BuildContext context, Map item, bool isFavorite) async {
+  final updatedData = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => SendEmailUI(profile: item, favorite: isFavorite),
+    ),
+  );
+
+  if (updatedData != null) {
+    final int itemId = updatedData['id'];
+    final updatedItem = items.firstWhere(
+      (item) => item['id'] == itemId,
+      orElse: () => <String, dynamic>{}, // Returns an empty Map if the item isn't found
+    );
+
+    if (updatedItem.isNotEmpty) {
+      setState(() {
+        updatedItem['first_name'] = updatedData['first_name'];
+        updatedItem['last_name'] = updatedData['last_name'];
+        updatedItem['email'] = updatedData['email'];
+        // Update other fields if needed
+      });
+    }
+  }
+}
+
+void updateContact() async {
+  final url = 'https://reqres.in/api/users/4';
+  final Map<String, String> headers = {
+    'Content-Type': 'application/json',
+  };
+  final Map<String, String> body = {
+    "name": "morpheus",
+    "job": "zion resident",
+  };
+
+  final response = await http.put(
+    Uri.parse(url),
+    headers: headers,
+    body: jsonEncode(body),
+  );
+
+  if (response.statusCode == 200) {
+    final json = jsonDecode(response.body);
+    print(json); // Print the response
+  } else {
+    // Handle error if needed
+  }
+}
+
+
+
+
   void deleteContact(int id) {
     setState(() {
       items.removeWhere((item) => item['id'] == id);
@@ -103,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
       length: 2,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {updateContact();},
           child: Icon(Icons.add),
         ),
         appBar: AppBar(
@@ -418,9 +471,3 @@ Widget customTabBar() {
   );
 }
 
-void navigateToSendEmail(BuildContext context, Map item, bool isFavorite) {
-  final route = MaterialPageRoute(
-    builder: (context) => SendEmailUI(profile: item, favorite: isFavorite),
-  );
-  Navigator.push(context, route);
-}
