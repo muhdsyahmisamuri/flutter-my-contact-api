@@ -1,6 +1,7 @@
 import 'edit_profile.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer';
+import 'package:url_launcher/url_launcher.dart';
 
 // MUHAMMAD SYAHMI BIN SAMURI
 // https://github.com/syahmisenpai97/
@@ -18,24 +19,39 @@ class SendEmailUI extends StatefulWidget {
 }
 
 class _SendEmailUIState extends State<SendEmailUI> {
-  
   void navigateToEditProfile(BuildContext context, Map? profileData) async {
-  final updatedData = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => EditProfileUI(profile: profileData),
-    ),
-  );
+    final updatedData = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfileUI(profile: profileData),
+      ),
+    );
 
-  if (updatedData != null) {
-    setState(() {
-      widget.profile?['first_name'] = updatedData['first_name'];
-      widget.profile?['last_name'] = updatedData['last_name'];
-      widget.profile?['email'] = updatedData['email'];
-      // Update other fields if needed
-    });
+    if (updatedData != null) {
+      setState(() {
+        widget.profile?['first_name'] = updatedData['first_name'];
+        widget.profile?['last_name'] = updatedData['last_name'];
+        widget.profile?['email'] = updatedData['email'];
+        // Update other fields if needed
+      });
+    }
   }
-}
+
+  void sendEmail() async {
+    String email = widget.profile?['email'] ?? '';
+    String subject = 'Subject of your email'; // Set your subject here
+    String body = 'Body of your email'; // Set your email body here
+
+    String mailtoLink = 'mailto:$email?subject=$subject&body=$body';
+
+    if (await canLaunch(mailtoLink)) {
+      await launch(mailtoLink);
+    } else {
+      // Handle the error
+      log('Could not launch email');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Map? profileData = widget.profile;
@@ -52,16 +68,15 @@ class _SendEmailUIState extends State<SendEmailUI> {
           backgroundColor: Color(0xFF32BAA5),
           centerTitle: true,
           leading: IconButton(
-  icon: Icon(
-    Icons.arrow_back,
-    color: Colors.white,
-  ),
-  onPressed: () {
-
-    Navigator.pop(context, widget.profile);// Remove the second argument
-  },
-),
-
+            icon: Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(
+                  context, widget.profile); // Remove the second argument
+            },
+          ),
           title: Text(
             "Edit Profile",
             style: TextStyle(
@@ -187,6 +202,7 @@ class _SendEmailUIState extends State<SendEmailUI> {
       padding: EdgeInsets.only(bottom: 16, left: 10, right: 10, top: 24),
       child: ElevatedButton(
         onPressed: () {
+          sendEmail();
           // Add your onPressed logic here.
         },
         style: ElevatedButton.styleFrom(

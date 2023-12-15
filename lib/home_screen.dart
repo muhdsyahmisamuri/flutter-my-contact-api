@@ -104,6 +104,18 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void createNewUser() {
+    final newUser = {
+      'first_name': 'syahmi',
+      'last_name': 'samuri',
+      'email': '',
+      'avatar': ''
+    };
+    setState(() {
+      items.add(newUser);
+    });
+  }
+
   void filterContacts(String enteredKeyword) {
     setState(() {
       if (enteredKeyword.isEmpty) {
@@ -158,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          updateContact();
+          createNewUser();
         },
         child: Icon(Icons.add),
       ),
@@ -288,7 +300,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundImage: NetworkImage(avatarUrl),radius: 30,
+                              backgroundImage: NetworkImage(avatarUrl),
+                              radius: 30,
                             ),
                             trailing: Icon(Icons.chevron_right),
                             onTap: () {
@@ -368,6 +381,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: ListTile(
                                   leading: Image.network(avatarUrl),
                                   trailing: Icon(Icons.chevron_right),
+                                  onTap: () {
+                                    navigateToSendEmail(
+                                        context, item, isFavorite);
+                                  },
                                   title: Row(
                                     children: [
                                       Text(fullName),
