@@ -9,7 +9,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: MainHome(title: 'My Home Page'),
     );
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MainHome extends StatefulWidget {
-  MainHome({Key? key, required this.title}) : super(key: key);
+  const MainHome({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
@@ -55,7 +55,7 @@ class _MainHomeState extends State<MainHome> {
                       });
                     },
                     child: Container(
-                      margin: EdgeInsets.all(5),
+                      margin: const EdgeInsets.all(5),
                       width: 80,
                       height: 45,
                       decoration: BoxDecoration(

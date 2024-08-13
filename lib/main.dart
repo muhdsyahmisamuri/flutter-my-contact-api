@@ -1,11 +1,21 @@
-import 'edit_profile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:my_contact/Navigation/routes.dart';
 
-import 'home_screen.dart';
 
 void main() {
-  runApp(MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(),
-      home: HomeScreen()));
+  runApp(ProviderScope(
+    child: ScreenUtilInit(
+        designSize: const Size(360, 690),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (_, child) {
+          return MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(),
+            routerConfig: Routes.router,
+          );
+        }),
+  ));
 }

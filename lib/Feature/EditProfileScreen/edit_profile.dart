@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:my_contact/Feature/HomeScreen/model/view_model_api_profile.dart';
+import 'package:my_contact/Screen/Widget/Style/model_style.dart';
 
 // MUHAMMAD SYAHMI BIN SAMURI
 // https://github.com/syahmisenpai97/
 // www.linkedin.com/in/muhdsyahmisamuri
 
 class EditProfileUI extends StatefulWidget {
-  final Map? profile;
+  final ViewModelApiProfile profile;
 
-  const EditProfileUI({Key? key, this.profile}) : super(key: key);
+  const EditProfileUI({Key? key, required this.profile}) : super(key: key);
 
   @override
   _EditProfileUIState createState() => _EditProfileUIState();
@@ -18,27 +20,21 @@ class _EditProfileUIState extends State<EditProfileUI> {
   TextEditingController lastNameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
 
-  // Define controllers for other fields if needed
   @override
   Widget build(BuildContext context) {
-    Map? profileData = widget.profile;
+    ViewModelApiProfile profileData = widget.profile;
 
-    firstNameController.text = profileData?['first_name'] ?? '';
-    lastNameController.text = profileData?['last_name'] ?? '';
-    emailController.text = profileData?['email'] ?? '';
-    // Set initial values for other controllers if needed
-
-    //String firstName = profileData?['first_name'] ?? '';
-    //String lastName = profileData?['last_name'] ?? '';
-    //String email = profileData?['email'] ?? '';
-    String avatar = profileData?['avatar'] ?? '';
+    firstNameController.text = profileData.firstName;
+    lastNameController.text = profileData.lastName;
+    emailController.text = profileData.email;
+    String avatar = profileData.avatar;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF32BAA5),
+        backgroundColor: ModelStyle.bgGreen,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back,
             color: Colors.white,
           ),
@@ -46,16 +42,12 @@ class _EditProfileUIState extends State<EditProfileUI> {
         ),
         title: Text(
           "Edit Profile",
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-            fontSize: 17,
-          ),
+          style: ModelStyle.defaultAppBarTextStyle,
         ),
         toolbarHeight: 80,
       ),
       body: Container(
-        padding: EdgeInsets.only(
+        padding: const EdgeInsets.only(
           top: 20,
           left: 20,
           right: 15,
@@ -73,7 +65,7 @@ class _EditProfileUIState extends State<EditProfileUI> {
                       width: 130,
                       height: 130,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xFF32BAA5), width: 4),
+                        border: Border.all(color: ModelStyle.bgGreen, width: 4),
                         boxShadow: [
                           BoxShadow(
                             blurRadius: 10,
@@ -82,9 +74,7 @@ class _EditProfileUIState extends State<EditProfileUI> {
                         ],
                         shape: BoxShape.circle,
                         image: DecorationImage(
-                          image: NetworkImage(avatar != null
-                              ? avatar
-                              : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'),
+                          image: NetworkImage(avatar),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -97,10 +87,10 @@ class _EditProfileUIState extends State<EditProfileUI> {
                           width: 35,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: Color(0xFF32BAA5)),
-                            color: Color(0xFF32BAA5),
+                            border: Border.all(color: ModelStyle.bgGreen),
+                            color: ModelStyle.bgGreen,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.edit,
                             color: Colors.white,
                           ),
@@ -108,7 +98,7 @@ class _EditProfileUIState extends State<EditProfileUI> {
                   ],
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 30,
               ),
               buildTextField(firstNameController, "First Name"),
@@ -124,31 +114,31 @@ class _EditProfileUIState extends State<EditProfileUI> {
 
   Widget buildTextField(TextEditingController controller, String textHint) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16, left: 10, right: 10),
+      padding: const EdgeInsets.only(bottom: 16, left: 10, right: 10),
       child: TextField(
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(100),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: Colors.black,
               width: 2,
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(100),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: Color(0xFF32BAA5),
               width: 2,
             ),
           ),
           labelText: textHint,
-          labelStyle: TextStyle(
+          labelStyle: const TextStyle(
             color: Color(0xFF32BAA5),
             fontWeight: FontWeight.w400,
             fontSize: 14,
             fontFamily: 'Montserrat',
           ),
-          contentPadding: EdgeInsets.fromLTRB(20, 24, 0, 24),
+          contentPadding: const EdgeInsets.fromLTRB(20, 24, 0, 24),
         ),
         controller: controller, // Use the provided controller
       ),
@@ -157,26 +147,27 @@ class _EditProfileUIState extends State<EditProfileUI> {
 
   Widget saveChangesButton() {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16, left: 10, right: 10, top: 24),
+      padding: const EdgeInsets.only(bottom: 16, left: 10, right: 10, top: 24),
       child: ElevatedButton(
         onPressed: () {
-          Map<String, String> updatedData = {
-            'first_name': firstNameController.text,
-            'last_name': lastNameController.text,
-            'email': emailController.text,
-            // Add other updated fields
-          };
+          final updatedProfile = ViewModelApiProfile(
+            id: widget.profile.id,
+            firstName: firstNameController.text,
+            lastName: lastNameController.text,
+            email: emailController.text,
+            avatar: widget.profile.avatar,
+          );
 
-          Navigator.of(context).pop(updatedData);
+          Navigator.of(context).pop(updatedProfile);
         },
         style: ElevatedButton.styleFrom(
-          primary: Color(0xFF32BAA5),
+          backgroundColor: ModelStyle.bgGreen,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(100),
           ),
-          minimumSize: Size(349, 50),
+          minimumSize: const Size(349, 50),
         ),
-        child: Text(
+        child: const Text(
           'Save Changes',
           style: TextStyle(
             color: Colors.white,
