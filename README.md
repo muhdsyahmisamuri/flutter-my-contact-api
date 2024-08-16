@@ -3,6 +3,9 @@
 
 ![image](https://github.com/syahmisenpai97/flutter-assessment-contact/assets/74369439/a865499f-5180-4e12-95eb-65467c5e336b)
 
+[Download APK](https://github.com/syahmisenpai97/flutter-my-contact-api/blob/c50fbce2c3b6d09d07c097f2e7ec1db824fafe0e/app-release.apk)
+
+
 ----
 ### Dummy Profile Listing
 - [Figma] - Please refer to the given UI
