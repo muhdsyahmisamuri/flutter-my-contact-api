@@ -1,174 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:my_contact/Feature/HomeScreen/controller/home_screen_provider.dart';
 import 'package:my_contact/Feature/HomeScreen/model/view_model_api_profile.dart';
 import 'package:my_contact/Screen/Widget/Style/model_style.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends ConsumerWidget {
+  HomeScreen({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final contactList = ref.watch(contactListProvider);
+    final starredItems = ref.watch(starredItemsProvider);
+    final currentTab = ref.watch(currentTabProvider);
+    final searchText = ref.watch(searchTextProvider);
 
-class _HomeScreenState extends State<HomeScreen> {
-  int current = 0;
-  String searchText = '';
-  final List<String> tab = ['All', 'Favourite'];
-  List<ViewModelApiProfile> items = [];
-  Set<int> starredItems = <int>{};
-  List<ViewModelApiProfile> filteredItems = [];
-
-  @override
-  void initState() {
-    super.initState();
-    fetchContact();
-  }
-
-  Future<List<ViewModelApiProfile>> fetchContact() async {
-    const url = 'https://reqres.in/api/users?page=1';
-    final uri = Uri.parse(url);
-    final response = await http.get(uri);
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
-      final List<dynamic> users = data['data'];
-
-      setState(() {
-        items =
-            users.map((user) => ViewModelApiProfile.fromJson(user)).toList();
-        filteredItems = items;
-      });
-
-      return items;
-    } else {
-      throw Exception('Failed to load profiles');
-    }
-  }
-
-  void navigateToSendEmail(BuildContext context, ViewModelApiProfile profile,
-      bool isFavorite) async {
-    final updatedData = await context.push<ViewModelApiProfile>(
-      '/send_email',
-      extra: {
-        'profile': profile,
-        'favorite': isFavorite,
-      },
-    );
-
-    // if (updatedData != null) {
-    //   final int itemId = updatedData['id'];
-    //   final updatedItem = items.firstWhere(
-    //     (item) => item.id == itemId,
-    //     orElse: () => ViewModelApiProfile(
-    //       id: 0, email: '', firstName: '', lastName: '', avatar: ''),
-    //   );
-
-    //   if (updatedItem.id != 0) {
-    //     setState(() {
-    //       updatedItem.firstName = updatedData['first_name'];
-    //       updatedItem.lastName = updatedData['last_name'];
-    //       updatedItem.email = updatedData['email'];
-    //     });
-    //   }
-    // }
-  }
-
-  void updateContact() async {
-    const url = 'https://reqres.in/api/users/4';
-    final Map<String, String> headers = {
-      'Content-Type': 'application/json',
-    };
-    final Map<String, String> body = {
-      "name": "morpheus",
-      "job": "zion resident",
-    };
-
-    final response = await http.put(
-      Uri.parse(url),
-      headers: headers,
-      body: jsonEncode(body),
-    );
-
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-    } else {}
-  }
-
-  void deleteContact(int id) {
-    setState(() {
-      items.removeWhere((item) => item.id == id);
-      filteredItems.removeWhere((item) => item.id == id);
-      starredItems.remove(id);
+    ref.listen<AsyncValue<void>>(fetchContactsProvider, (previous, next) {
+      next.when(
+        data: (_) {},
+        loading: () => ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Fetching contacts...')),
+        ),
+        error: (err, stack) => ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch contacts: $err')),
+        ),
+      );
     });
-  }
 
-  void createNewUser() {
-    final newUser = ViewModelApiProfile(
-      id: DateTime.now().millisecondsSinceEpoch,
-      firstName: 'syahmi',
-      lastName: 'samuri',
-      email: '',
-      avatar: '',
-    );
-    setState(() {
-      filteredItems.add(newUser);
-    });
-  }
+    final filteredItems = contactList.where((item) {
+      final fullName = '${item.firstName} ${item.lastName}'.toLowerCase();
+      final email = item.email.toLowerCase();
 
-  void filterContacts(String enteredKeyword) {
-    setState(() {
-      if (enteredKeyword.isEmpty) {
-        filteredItems = items;
-      } else {
-        enteredKeyword = enteredKeyword.toLowerCase();
-        filteredItems = items.where((item) {
-          final fullName = '${item.firstName} ${item.lastName}'.toLowerCase();
-          final email = item.email.toLowerCase();
+      return fullName.contains(searchText.toLowerCase()) ||
+          email.contains(searchText.toLowerCase());
+    }).toList();
 
-          return fullName.contains(enteredKeyword) ||
-              email.contains(enteredKeyword);
-        }).toList();
-      }
-
-      if (filteredItems.isEmpty) {
-        filteredItems = [
-          ViewModelApiProfile(
-              id: 0,
-              email: '',
-              firstName: 'No result',
-              lastName: '',
-              avatar: ''),
-        ];
-      }
-    });
-  }
-
-  void navigateToEditProfile(
-      BuildContext context, ViewModelApiProfile profile) async {
-    final result = await context.push<ViewModelApiProfile>(
-      '/edit_profile',
-      extra: profile,
-    );
-
-    if (result != null) {
-      final index = items.indexWhere((item) => item.id == result.id);
-      if (index != -1) {
-        items[index] = result;
-        filteredItems = List.from(items);
-      }
-      setState(() {});
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: createNewUser,
+        onPressed: () => ref.read(contactListProvider.notifier).createNewUser(),
         child: const Icon(Icons.add),
       ),
       appBar: AppBar(
@@ -183,7 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 30),
             child: IconButton(
-              onPressed: fetchContact,
+              onPressed: () =>
+                  ref.read(contactListProvider.notifier).fetchContact(),
               icon: const Icon(
                 Icons.refresh,
                 color: Colors.white,
@@ -199,10 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(top: 10, left: 19, right: 19),
             child: TextField(
               onChanged: (value) {
-                setState(() {
-                  searchText = value;
-                  filterContacts(searchText);
-                });
+                ref.read(searchTextProvider.notifier).state = value;
               },
               decoration: InputDecoration(
                 labelText: 'Search Contact',
@@ -223,84 +91,76 @@ class _HomeScreenState extends State<HomeScreen> {
               style: ModelStyle.defaultTextStyle,
             ),
           ),
-          customTabBar(),
+          customTabBar(ref),
           Expanded(
-            child: current == 0
+            child: currentTab == 0
                 ? ListView.builder(
                     itemCount: filteredItems.length,
                     itemBuilder: (context, index) {
-                      if (filteredItems[index].firstName == 'No result') {
-                        return const ListTile(
-                          title: Text('No result'),
-                        );
-                      } else {
-                        final item = filteredItems[index];
-                        final fullName = '${item.firstName} ${item.lastName}';
-                        final avatarUrl = item.avatar;
-                        final id = item.id;
-                        final isFavorite = starredItems.contains(id);
+                      final item = filteredItems[index];
+                      final fullName = '${item.firstName} ${item.lastName}';
+                      final avatarUrl = item.avatar;
+                      final id = item.id;
+                      final isFavorite = starredItems.contains(id);
 
-                        return Slidable(
-                          endActionPane: ActionPane(
-                            motion: const ScrollMotion(),
+                      return Slidable(
+                        endActionPane: ActionPane(
+                          motion: const ScrollMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (_) {
+                                navigateToEditProfile(context, item);
+                              },
+                              backgroundColor: ModelStyle.bgGreen,
+                              foregroundColor: ModelStyle.fgYellow,
+                              icon: Icons.edit,
+                            ),
+                            const Divider(
+                              indent: 2,
+                            ),
+                            SlidableAction(
+                              onPressed: (_) {
+                                ref
+                                    .read(contactListProvider.notifier)
+                                    .deleteContact(id);
+                              },
+                              backgroundColor: ModelStyle.bgGreen,
+                              foregroundColor: Colors.red,
+                              icon: Icons.delete,
+                            ),
+                          ],
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: avatarUrl.isNotEmpty
+                                ? NetworkImage(avatarUrl)
+                                : null,
+                            radius: 30,
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            navigateToSendEmail(context, item, isFavorite);
+                          },
+                          title: Row(
                             children: [
-                              SlidableAction(
-                                onPressed: (_) {
-                                  navigateToEditProfile(context, item);
+                              Text(fullName),
+                              const SizedBox(width: 4),
+                              GestureDetector(
+                                onTap: () {
+                                  ref
+                                      .read(starredItemsProvider.notifier)
+                                      .toggleStarred(id);
                                 },
-                                backgroundColor: ModelStyle.bgGreen,
-                                foregroundColor: ModelStyle.fgYellow,
-                                icon: Icons.edit,
-                              ),
-                              const Divider(
-                                indent: 2,
-                              ),
-                              SlidableAction(
-                                onPressed: (_) {
-                                  deleteContact(id);
-                                },
-                                backgroundColor: ModelStyle.bgGreen,
-                                foregroundColor: Colors.red,
-                                icon: Icons.delete,
+                                child: Icon(
+                                  isFavorite ? Icons.star : Icons.star_border,
+                                  color: isFavorite ? Colors.yellow : null,
+                                ),
                               ),
                             ],
                           ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: avatarUrl.isNotEmpty
-                                  ? NetworkImage(avatarUrl)
-                                  : null,
-                              radius: 30,
-                            ),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              navigateToSendEmail(context, item, isFavorite);
-                            },
-                            title: Row(
-                              children: [
-                                Text(fullName),
-                                const SizedBox(width: 4),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      if (isFavorite) {
-                                        starredItems.remove(id);
-                                      } else {
-                                        starredItems.add(id);
-                                      }
-                                    });
-                                  },
-                                  child: Icon(
-                                    isFavorite ? Icons.star : Icons.star_border,
-                                    color: isFavorite ? Colors.yellow : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Text(item.email),
-                          ),
-                        );
-                      }
+                          subtitle: Text(item.email),
+                        ),
+                      );
                     },
                   )
                 : ListView.builder(
@@ -347,13 +207,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(width: 4),
                                 GestureDetector(
                                   onTap: () {
-                                    setState(() {
-                                      if (isFavorite) {
-                                        starredItems.remove(id);
-                                      } else {
-                                        starredItems.add(id);
-                                      }
-                                    });
+                                    ref
+                                        .read(starredItemsProvider.notifier)
+                                        .toggleStarred(id);
                                   },
                                   child: Icon(
                                     isFavorite ? Icons.star : Icons.star_border,
@@ -376,7 +232,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget customTabBar() {
+  Widget customTabBar(WidgetRef ref) {
+    List<String> tab = ['All', 'Favourite'];
     return Container(
       margin: const EdgeInsets.all(5),
       width: double.infinity,
@@ -387,23 +244,32 @@ class _HomeScreenState extends State<HomeScreen> {
         itemBuilder: (ctx, index) {
           return GestureDetector(
             onTap: () {
-              setState(() {
-                current = index;
-              });
+              if (index == 0 &&
+                  ref.read(currentTabProvider.notifier).state == 1) {
+                ref.read(currentTabProvider.notifier).state--;
+              }
+              if (index == 1 &&
+                  ref.read(currentTabProvider.notifier).state == 0) {
+                ref.read(currentTabProvider.notifier).state++;
+              }
             },
             child: Container(
               margin: const EdgeInsets.all(5),
               width: 70,
               height: 26,
               decoration: BoxDecoration(
-                color: current == index ? ModelStyle.bgGreen : Colors.white70,
-                borderRadius: BorderRadius.circular(15),
-              ),
+                  color: ref.read(currentTabProvider.notifier).state == index
+                      ? ModelStyle.bgGreen
+                      : Colors.white70,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(width: 0.5, color: ModelStyle.bcDisable)),
               child: Center(
                 child: Text(
                   tab[index],
                   style: TextStyle(
-                    color: current == index ? Colors.white : Colors.black,
+                    color: ref.read(currentTabProvider.notifier).state == index
+                        ? Colors.white
+                        : Colors.black,
                   ),
                 ),
               ),
@@ -412,5 +278,16 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     );
+  }
+
+  void navigateToEditProfile(
+      BuildContext context, ViewModelApiProfile profile) {
+    context.push('/edit_profile', extra: profile);
+  }
+
+  void navigateToSendEmail(
+      BuildContext context, ViewModelApiProfile profile, bool isFavorite) {
+    context.push('/send_email',
+        extra: {'profile': profile, 'isFavorite': isFavorite});
   }
 }

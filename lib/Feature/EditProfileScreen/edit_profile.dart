@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_contact/Feature/HomeScreen/controller/home_screen_provider.dart';
 import 'package:my_contact/Feature/HomeScreen/model/view_model_api_profile.dart';
 import 'package:my_contact/Screen/Widget/Style/model_style.dart';
 
@@ -6,28 +8,33 @@ import 'package:my_contact/Screen/Widget/Style/model_style.dart';
 // https://github.com/syahmisenpai97/
 // www.linkedin.com/in/muhdsyahmisamuri
 
-class EditProfileUI extends StatefulWidget {
+final firstNameControllerProvider = StateProvider<TextEditingController>((ref) {
+  return TextEditingController();
+});
+
+final lastNameControllerProvider = StateProvider<TextEditingController>((ref) {
+  return TextEditingController();
+});
+
+final emailControllerProvider = StateProvider<TextEditingController>((ref) {
+  return TextEditingController();
+});
+
+class EditProfileUI extends ConsumerWidget {
   final ViewModelApiProfile profile;
 
   const EditProfileUI({Key? key, required this.profile}) : super(key: key);
 
   @override
-  _EditProfileUIState createState() => _EditProfileUIState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final firstNameController = ref.watch(firstNameControllerProvider);
+    final lastNameController = ref.watch(lastNameControllerProvider);
+    final emailController = ref.watch(emailControllerProvider);
 
-class _EditProfileUIState extends State<EditProfileUI> {
-  TextEditingController firstNameController = TextEditingController();
-  TextEditingController lastNameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    ViewModelApiProfile profileData = widget.profile;
-
-    firstNameController.text = profileData.firstName;
-    lastNameController.text = profileData.lastName;
-    emailController.text = profileData.email;
-    String avatar = profileData.avatar;
+    firstNameController.text = profile.firstName;
+    lastNameController.text = profile.lastName;
+    emailController.text = profile.email;
+    String avatar = profile.avatar;
 
     return Scaffold(
       appBar: AppBar(
@@ -80,31 +87,30 @@ class _EditProfileUIState extends State<EditProfileUI> {
                       ),
                     ),
                     Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          height: 35,
-                          width: 35,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: ModelStyle.bgGreen),
-                            color: ModelStyle.bgGreen,
-                          ),
-                          child: const Icon(
-                            Icons.edit,
-                            color: Colors.white,
-                          ),
-                        ))
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        height: 35,
+                        width: 35,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: ModelStyle.bgGreen),
+                          color: ModelStyle.bgGreen,
+                        ),
+                        child: const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(
-                height: 30,
-              ),
-              buildTextField(firstNameController, "First Name"),
-              buildTextField(lastNameController, "Last Name"),
-              buildTextField(emailController, "Email"),
-              saveChangesButton()
+              const SizedBox(height: 30),
+              buildTextField(ref, firstNameControllerProvider, "First Name"),
+              buildTextField(ref, lastNameControllerProvider, "Last Name"),
+              buildTextField(ref, emailControllerProvider, "Email"),
+              saveChangesButton(context, ref),
             ],
           ),
         ),
@@ -112,7 +118,12 @@ class _EditProfileUIState extends State<EditProfileUI> {
     );
   }
 
-  Widget buildTextField(TextEditingController controller, String textHint) {
+  Widget buildTextField(
+      WidgetRef ref,
+      StateProvider<TextEditingController> controllerProvider,
+      String textHint) {
+    final controller = ref.watch(controllerProvider);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16, left: 10, right: 10),
       child: TextField(
@@ -140,23 +151,29 @@ class _EditProfileUIState extends State<EditProfileUI> {
           ),
           contentPadding: const EdgeInsets.fromLTRB(20, 24, 0, 24),
         ),
-        controller: controller, // Use the provided controller
+        controller: controller,
       ),
     );
   }
 
-  Widget saveChangesButton() {
+  Widget saveChangesButton(BuildContext context, WidgetRef ref) {
+    final firstNameController = ref.read(firstNameControllerProvider);
+    final lastNameController = ref.read(lastNameControllerProvider);
+    final emailController = ref.read(emailControllerProvider);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16, left: 10, right: 10, top: 24),
       child: ElevatedButton(
         onPressed: () {
           final updatedProfile = ViewModelApiProfile(
-            id: widget.profile.id,
+            id: profile.id,
             firstName: firstNameController.text,
             lastName: lastNameController.text,
             email: emailController.text,
-            avatar: widget.profile.avatar,
+            avatar: profile.avatar,
           );
+
+          ref.read(contactListProvider.notifier).updateContact(updatedProfile);
 
           Navigator.of(context).pop(updatedProfile);
         },

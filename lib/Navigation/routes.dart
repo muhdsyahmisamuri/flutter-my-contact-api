@@ -11,7 +11,7 @@ class Routes {
       GoRoute(
         path: '/',
         builder: (BuildContext context, GoRouterState state) {
-          return const HomeScreen();
+          return HomeScreen();
         },
         routes: <RouteBase>[
           GoRoute(
@@ -26,7 +26,7 @@ class Routes {
             builder: (BuildContext context, GoRouterState state) {
               final data = state.extra! as Map<String, dynamic>;
               return SendEmailUI(
-                favorite: data['favorite'],
+                favorite: data['isFavorite'],
                 profile: data['profile'],
               );
             },

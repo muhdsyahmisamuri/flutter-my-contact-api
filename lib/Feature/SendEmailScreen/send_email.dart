@@ -1,64 +1,51 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_contact/Feature/HomeScreen/controller/home_screen_provider.dart';
 import 'package:my_contact/Feature/HomeScreen/model/view_model_api_profile.dart';
 import 'package:my_contact/Screen/Widget/Style/model_style.dart';
 import 'dart:developer';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_contact/Feature/HomeScreen/model/view_model_api_profile.dart';
 
-// MUHAMMAD SYAHMI BIN SAMURI
-// https://github.com/syahmisenpai97/
-// www.linkedin.com/in/muhdsyahmisamuri
+final profileProvider = StateProvider<ViewModelApiProfile?>((ref) => null);
 
-class SendEmailUI extends StatefulWidget {
-  ViewModelApiProfile profile;
+final favoriteProvider = StateProvider<bool>((ref) => false);
+
+class SendEmailUI extends ConsumerStatefulWidget {
+  final ViewModelApiProfile profile;
   final bool favorite;
 
   SendEmailUI({Key? key, required this.profile, required this.favorite})
       : super(key: key);
 
   @override
-  _SendEmailUIState createState() => _SendEmailUIState();
+  ConsumerState<SendEmailUI> createState() => _SendEmailUIState();
 }
 
-class _SendEmailUIState extends State<SendEmailUI> {
-  void navigateToEditProfile(
-      BuildContext context, ViewModelApiProfile profileData) async {
-    final updatedData = await context.push<ViewModelApiProfile>(
-      '/edit_profile',
-      extra: profileData,
-    );
-
-    if (updatedData != null) {
-      widget.profile = updatedData;
-    }
-  }
-
-  void sendEmail() async {
-    final email = widget.profile.email;
-    const subject = 'Subject of your email';
-    const body = 'Body of your email';
-    final mailtoLink =
-        'mailto:$email?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
-
-    final uri = Uri.parse(mailtoLink);
-
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      log('Could not launch email');
-    }
+class _SendEmailUIState extends ConsumerState<SendEmailUI> {
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(profileProvider.notifier).state = widget.profile;
+      ref.read(favoriteProvider.notifier).state = widget.favorite;
+    });
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final profileData = widget.profile;
-    final isFavorite = widget.favorite;
+    final profileData = ref.watch(profileProvider);
+    final isFavorite = ref.watch(favoriteProvider);
 
-    final firstName = profileData.firstName;
-    final lastName = profileData.lastName;
-    final email = profileData.email;
-    final avatar = profileData.avatar;
-    final fullName = "$firstName $lastName";
+    if (profileData == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text("No Profile Data"),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -70,7 +57,7 @@ class _SendEmailUIState extends State<SendEmailUI> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.pop(context, widget.profile);
+            Navigator.pop(context, profileData);
           },
         ),
         title: const Text(
@@ -97,7 +84,7 @@ class _SendEmailUIState extends State<SendEmailUI> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        navigateToEditProfile(context, profileData);
+                        navigateToEditProfile(context, profileData, ref);
                       },
                       child: const Padding(
                         padding: EdgeInsets.only(right: 40, top: 15),
@@ -126,7 +113,7 @@ class _SendEmailUIState extends State<SendEmailUI> {
                           ],
                           shape: BoxShape.circle,
                           image: DecorationImage(
-                            image: NetworkImage(avatar),
+                            image: NetworkImage(profileData.avatar),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -140,7 +127,7 @@ class _SendEmailUIState extends State<SendEmailUI> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      fullName,
+                      "${profileData.firstName} ${profileData.lastName}",
                       style: const TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 16,
@@ -167,7 +154,7 @@ class _SendEmailUIState extends State<SendEmailUI> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              email,
+                              profileData.email,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -181,7 +168,7 @@ class _SendEmailUIState extends State<SendEmailUI> {
                     ),
                   ],
                 ),
-                saveChangesButton()
+                saveChangesButton(ref)
               ],
             ),
           ),
@@ -190,12 +177,12 @@ class _SendEmailUIState extends State<SendEmailUI> {
     );
   }
 
-  Widget saveChangesButton() {
+  Widget saveChangesButton(WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16, left: 10, right: 10, top: 24),
       child: ElevatedButton(
         onPressed: () {
-          sendEmail();
+          sendEmail(ref);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: ModelStyle.bgGreen,
@@ -215,6 +202,34 @@ class _SendEmailUIState extends State<SendEmailUI> {
         ),
       ),
     );
+  }
+
+  void sendEmail(WidgetRef ref) async {
+    final email = ref.read(profileProvider)?.email;
+    const subject = 'Subject of your email';
+    const body = 'Body of your email';
+    final mailtoLink =
+        'mailto:$email?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
+
+    final uri = Uri.parse(mailtoLink);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      log('Could not launch email');
+    }
+  }
+
+  void navigateToEditProfile(BuildContext context,
+      ViewModelApiProfile profileData, WidgetRef ref) async {
+    final updatedData = await context.push<ViewModelApiProfile>(
+      '/edit_profile',
+      extra: profileData,
+    );
+
+    if (updatedData != null) {
+      ref.read(profileProvider.notifier).state = updatedData;
+    }
   }
 }
 
