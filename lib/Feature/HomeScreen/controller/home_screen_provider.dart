@@ -23,12 +23,13 @@ final currentTabProvider = StateProvider<int>((ref) => 0);
 
 final searchTextProvider = StateProvider<String>((ref) => '');
 
-
 class ContactListNotifier extends StateNotifier<List<ViewModelApiProfile>> {
   ContactListNotifier() : super([]);
 
+  bool localUrl = true;
+
   Future<void> fetchContact() async {
-    const url = ServiceUrl.profileUrl;
+    var url = localUrl ? ServiceUrl.laravelUrl : ServiceUrl.profileUrl;
     final uri = Uri.parse(url);
     final response = await http.get(uri);
 
@@ -61,7 +62,6 @@ class ContactListNotifier extends StateNotifier<List<ViewModelApiProfile>> {
       return item.id == updatedProfile.id ? updatedProfile : item;
     }).toList();
   }
-
 }
 
 class StarredItemsNotifier extends StateNotifier<Set<int>> {
