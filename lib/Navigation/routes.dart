@@ -11,7 +11,7 @@ class Routes {
       GoRoute(
         path: '/',
         builder: (BuildContext context, GoRouterState state) {
-          return HomeScreen();
+          return const HomeScreen();
         },
         routes: <RouteBase>[
           GoRoute(

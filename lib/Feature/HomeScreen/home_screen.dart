@@ -7,7 +7,7 @@ import 'package:my_contact/Feature/HomeScreen/model/view_model_api_profile.dart'
 import 'package:my_contact/Screen/Widget/Style/model_style.dart';
 
 class HomeScreen extends ConsumerWidget {
-  HomeScreen({super.key});
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

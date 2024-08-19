@@ -1,13 +1,10 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:my_contact/Feature/HomeScreen/controller/home_screen_provider.dart';
 import 'package:my_contact/Feature/HomeScreen/model/view_model_api_profile.dart';
 import 'package:my_contact/Screen/Widget/Style/model_style.dart';
 import 'dart:developer';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:my_contact/Feature/HomeScreen/model/view_model_api_profile.dart';
 
 final profileProvider = StateProvider<ViewModelApiProfile?>((ref) => null);
 
@@ -17,7 +14,7 @@ class SendEmailUI extends ConsumerStatefulWidget {
   final ViewModelApiProfile profile;
   final bool favorite;
 
-  SendEmailUI({Key? key, required this.profile, required this.favorite})
+  const SendEmailUI({Key? key, required this.profile, required this.favorite})
       : super(key: key);
 
   @override

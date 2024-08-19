@@ -59,7 +59,8 @@ class _MainHomeState extends State<MainHome> {
                       width: 80,
                       height: 45,
                       decoration: BoxDecoration(
-                        color: current == index ? Colors.white70 : Colors.white54,
+                        color:
+                            current == index ? Colors.white70 : Colors.white54,
                       ),
                       child: Center(child: Text(items[index])),
                     ),
@@ -67,9 +68,13 @@ class _MainHomeState extends State<MainHome> {
                 },
               ),
             ),
-          Container(margin: const EdgeInsets.only(top: 30),
+            Container(
+              margin: const EdgeInsets.only(top: 30),
               width: double.infinity,
-              height: 800,color: Colors.black,)],
+              height: 800,
+              color: Colors.black,
+            )
+          ],
         ),
       ),
     );
