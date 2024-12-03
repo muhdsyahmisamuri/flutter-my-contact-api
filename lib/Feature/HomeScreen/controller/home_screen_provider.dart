@@ -26,7 +26,7 @@ final searchTextProvider = StateProvider<String>((ref) => '');
 class ContactListNotifier extends StateNotifier<List<ViewModelApiProfile>> {
   ContactListNotifier() : super([]);
 
-  bool localUrl = true;
+  bool localUrl = false;
 
   Future<void> fetchContact() async {
     var url = localUrl ? ServiceUrl.laravelUrl : ServiceUrl.profileUrl;
